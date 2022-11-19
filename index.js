@@ -24,7 +24,6 @@ async function run(){
 
         app.get('/appointmentOptions', async(req, res) => {
             const date = req.query.date;
-            console.log(date);
             // all option query
             const query = {};
             const options = await appointmentOptionCollection.find(query).toArray();
@@ -58,6 +57,21 @@ async function run(){
         // send appointment
         app.post('/bookings', async(req, res) => {
             const booking = req.body;
+            console.log(booking)
+
+            const query = {
+                appointmentDate: booking.appointmentDate,
+                email: booking.email,
+                treatment: booking.treatment
+            }
+
+            const bookedAlready = await bookingsCollection.find(query).toArray();
+
+            if(bookedAlready.length){
+                const message = `You already have a booking on ${booking.treatment} ${booking.appointmentDate} ${booking.slot}`
+                return res.send({acknowledged: false, message});
+            }
+
             const result = await bookingsCollection.insertOne(booking);
             res.send(result);
         })
