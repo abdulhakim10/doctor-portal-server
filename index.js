@@ -42,6 +42,7 @@ async function run(){
         const appointmentOptionCollection = client.db('doctorPortal').collection('appointmentOptions');
         const bookingsCollection = client.db('doctorPortal').collection('bookings');
         const usersCollection = client.db('doctorPortal').collection('users');
+        const doctorsCollection = client.db('doctorPortal').collection('doctor');
 
         app.get('/appointmentOptions', async(req, res) => {
             const date = req.query.date;
@@ -74,6 +75,13 @@ async function run(){
          * app.patch('/bookings/:id')
          * app.delete('/bookings/:id')
          */
+
+        // get appointment name only as specialty
+        app.get('/appointmentSpecialty', async(req, res) => {
+            const query = {};
+            const result = await appointmentOptionCollection.find(query).project({name: 1}).toArray();
+            res.send(result);
+        })
 
         // get bookings
         app.get('/bookings', verifyJWT, async(req, res) => {
@@ -167,7 +175,30 @@ async function run(){
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+        });
+
+        // add doctor
+        app.post('/doctors', async(req, res) => {
+            const doctor = req.body;
+            const result = await doctorsCollection.insertOne(doctor);
+            res.send(result);
+        });
+
+        // get doctors
+        app.get('/doctors', async(req, res) => {
+            const query = {};
+            const result = await doctorsCollection.find(query).toArray();
+            res.send(result)
+        });
+
+        // delete doctor
+        app.delete('/doctors/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await doctorsCollection.deleteOne(filter);
+            res.send(result)
         })
+
     }
     finally{
 
